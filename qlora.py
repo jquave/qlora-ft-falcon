@@ -515,6 +515,14 @@ def make_data_module(tokenizer: transformers.PreTrainedTokenizer, args) -> Dict:
             return load_dataset("timdettmers/openassistant-guanaco")
         elif dataset_name == 'vicuna':
             raise NotImplementedError("Vicuna data was not released.")
+        # Local files
+        elif "jquave/e_smol" in args.dataset:
+            print(f'Using {args.dataset}')
+            #if args.dataset.endswith(".json") or args.dataset.endswith(".jsonl"):
+            #    dataset = load_dataset("json", data_files=args.dataset)
+            #else:
+            return load_dataset("jquave/e_smol")
+            #dataset = dataset.map(extract_alpaca_dataset, remove_columns=['instruction'])
         else:
             if os.path.exists(dataset_name):
                 try:
@@ -527,6 +535,8 @@ def make_data_module(tokenizer: transformers.PreTrainedTokenizer, args) -> Dict:
                 raise NotImplementedError(f"Dataset {dataset_name} not implemented yet.")
 
     def format_dataset(dataset, dataset_format):
+        print(f"dataset: {dataset}")
+        print(f"dataset_format: {dataset_format}")
         if (
             dataset_format == 'alpaca' or dataset_format == 'alpaca-clean' or 
             (dataset_format is None and args.dataset in ['alpaca', 'alpaca-clean'])
@@ -550,7 +560,14 @@ def make_data_module(tokenizer: transformers.PreTrainedTokenizer, args) -> Dict:
                 'input': '',
                 'output': x['text'],
             })
+        elif dataset_format == 'jquave':
+            print("use jquave formatting to extract train")
+            dataset = dataset.map(lambda x: {
+                'input': '',
+                'output': x['train'],
+            })
         # Remove unused columns.
+        print("remove unused columns")
         dataset = dataset.remove_columns(
             [col for col in dataset.column_names['train'] if col not in ['input', 'output']]
         )
@@ -558,7 +575,9 @@ def make_data_module(tokenizer: transformers.PreTrainedTokenizer, args) -> Dict:
         
      # Load dataset.
     dataset = load_data(args.dataset)
+    print(f"loaded data in {args.dataset} :\n{dataset}")
     dataset = format_dataset(dataset, args.dataset_format)
+    print(f"formatted dataset with format {args.dataset_format}")
 
     # Split train/eval, reduce size
     if args.do_eval or args.do_predict:
