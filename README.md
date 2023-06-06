@@ -1,3 +1,10 @@
+# NOTE
+# NOT A FORK
+
+This is a personal repo for educational purposes. The original is at https://github.com/artidoro/qlora
+
+
+
 
 
 # QLoRA: Efficient Finetuning of Quantized LLMs
